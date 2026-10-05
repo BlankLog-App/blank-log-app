@@ -2,9 +2,6 @@
 // BLANK LOG™ HUB — COMPLETE FRONTEND
 // ============================================================
 
-// ============================================================
-// SVG ICONS
-// ============================================================
 const Icons = {
     home: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>`,
     send: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>`,
@@ -20,12 +17,10 @@ const Icons = {
     upload: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
     copy: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`,
     check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    more: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
     settings: `⚙️`
 };
 
-// ============================================================
-// PLANS
-// ============================================================
 const PLANS = {
     free: {
         id: 'free', name: 'Free', priceDisplay: '$0', priceLabel: 'Free',
@@ -44,9 +39,6 @@ const PLANS = {
     }
 };
 
-// ============================================================
-// APP STATE
-// ============================================================
 let AppState = {
     isAuthenticated: true,
     currentUser: {
@@ -72,9 +64,6 @@ let AppState = {
     settings: { theme: 'dark' }
 };
 
-// ============================================================
-// STORAGE
-// ============================================================
 function saveState() {
     try {
         localStorage.setItem('blanklog_hub_state', JSON.stringify({
@@ -112,9 +101,6 @@ function loadState() {
 }
 loadState();
 
-// ============================================================
-// THEME
-// ============================================================
 function applyTheme(theme) {
     if (theme === 'light') document.body.classList.add('light-mode');
     else document.body.classList.remove('light-mode');
@@ -123,9 +109,6 @@ function applyTheme(theme) {
 }
 applyTheme(AppState.settings.theme || 'dark');
 
-// ============================================================
-// HELPERS
-// ============================================================
 function getRemaining(m) {
     return Math.max(0, AppState.usage[m].limit - AppState.usage[m].used);
 }
@@ -148,9 +131,6 @@ function getPlanBadge() {
     return 'badge-pro';
 }
 
-// ============================================================
-// NAVIGATION
-// ============================================================
 const baseTabs = [
     { id: 'home', label: 'Home', icon: Icons.home },
     { id: 'autopost', label: 'Auto Post', icon: Icons.send },
@@ -172,9 +152,6 @@ function setActiveTab(tabId) {
     renderApp();
 }
 
-// ============================================================
-// SIDEBAR
-// ============================================================
 function renderSidebar() {
     const plan = AppState.currentUser.plan;
     const planData = PLANS[plan];
@@ -229,26 +206,58 @@ function renderSidebar() {
     `;
 }
 
-// ============================================================
-// MOBILE NAV
-// ============================================================
 function renderMobileNav() {
-    const mobileTabs = tabs.slice(0, 6);
+    const primaryTabs = tabs.slice(0, 5);
+    const moreTabs = tabs.slice(5);
+    const moreActive = moreTabs.some(t => t.id === AppState.activeTab);
+    
     return `
         <div class="mobile-nav">
-            ${mobileTabs.map(tab => `
+            ${primaryTabs.map(tab => `
                 <button onclick="setActiveTab('${tab.id}')" class="${AppState.activeTab === tab.id ? 'active' : ''}">
                     ${tab.icon}
                     <span>${tab.label}</span>
                 </button>
             `).join('')}
+            <button onclick="toggleMobileMore(event)" class="${moreActive ? 'active' : ''}">
+                ${Icons.more}
+                <span>More</span>
+            </button>
         </div>
     `;
 }
 
-// ============================================================
-// FOOTER
-// ============================================================
+function toggleMobileMore(event) {
+    event.stopPropagation();
+    const existing = document.getElementById('mobileMoreMenu');
+    const existingBackdrop = document.getElementById('mobileMoreBackdrop');
+    
+    if (existing) {
+        existing.remove();
+        if (existingBackdrop) existingBackdrop.remove();
+        return;
+    }
+    
+    const moreTabs = tabs.slice(5);
+    
+    const backdrop = document.createElement('div');
+    backdrop.className = 'mobile-more-backdrop';
+    backdrop.id = 'mobileMoreBackdrop';
+    backdrop.onclick = toggleMobileMore;
+    document.body.appendChild(backdrop);
+    
+    const menu = document.createElement('div');
+    menu.className = 'mobile-more-menu';
+    menu.id = 'mobileMoreMenu';
+    menu.innerHTML = moreTabs.map(tab => `
+        <button onclick="setActiveTab('${tab.id}'); toggleMobileMore(event);" class="${AppState.activeTab === tab.id ? 'active' : ''}">
+            ${tab.icon}
+            <span>${tab.label}</span>
+        </button>
+    `).join('');
+    document.body.appendChild(menu);
+}
+
 function renderFooter() {
     return `
         <div class="footer">
@@ -257,9 +266,6 @@ function renderFooter() {
     `;
 }
 
-// ============================================================
-// PROOF FEED
-// ============================================================
 function renderProofFeed() {
     const proofs = AppState.proofs.slice(0, 5);
     return `
@@ -294,9 +300,6 @@ function renderProofFeed() {
     `;
 }
 
-// ============================================================
-// HOME TAB
-// ============================================================
 function renderHomeTab() {
     const plan = AppState.currentUser.plan;
     const planData = PLANS[plan];
@@ -362,9 +365,6 @@ function renderHomeTab() {
     `;
 }
 
-// ============================================================
-// AUTO POST TAB
-// ============================================================
 function renderAutoPostTab() {
     const remaining = getRemaining('autoPost');
     const unlimited = isUnlimited('autoPost');
@@ -425,9 +425,6 @@ function renderAutoPostTab() {
     `;
 }
 
-// ============================================================
-// AI CHAT TAB
-// ============================================================
 function renderChatTab() {
     const remaining = getRemaining('chat');
     const unlimited = isUnlimited('chat');
@@ -452,9 +449,6 @@ function renderChatTab() {
     `;
 }
 
-// ============================================================
-// KALSHI TAB
-// ============================================================
 function renderKalshiTab() {
     const remaining = getRemaining('kalshi');
     const unlimited = isUnlimited('kalshi');
@@ -499,9 +493,6 @@ function renderKalshiTab() {
     `;
 }
 
-// ============================================================
-// CODE TAB
-// ============================================================
 function renderCodeTab() {
     const remaining = getRemaining('code');
     const unlimited = isUnlimited('code');
@@ -549,9 +540,6 @@ function renderCodeTab() {
     `;
 }
 
-// ============================================================
-// ANALYTICS TAB
-// ============================================================
 function renderAnalyticsTab() {
     const remaining = getRemaining('analytics');
     const unlimited = isUnlimited('analytics');
@@ -601,9 +589,6 @@ function renderAnalyticsTab() {
     `;
 }
 
-// ============================================================
-// HOMEWORK SOLVER TAB
-// ============================================================
 function renderHomeworkTab() {
     const remaining = getRemaining('homework');
     const unlimited = isUnlimited('homework');
@@ -686,9 +671,6 @@ function renderHomeworkTab() {
     `;
 }
 
-// ============================================================
-// UPDATES TAB
-// ============================================================
 function renderUpdatesTab() {
     const updates = AppState.updates;
     return `
@@ -716,9 +698,6 @@ function renderUpdatesTab() {
     `;
 }
 
-// ============================================================
-// SETTINGS TAB
-// ============================================================
 function renderSettingsTab() {
     const user = AppState.currentUser;
     const theme = AppState.settings.theme || 'dark';
@@ -784,9 +763,6 @@ function renderSettingsTab() {
     `;
 }
 
-// ============================================================
-// ADMIN TAB
-// ============================================================
 function renderAdminTab() {
     const isAdmin = AppState.currentUser.role === 'admin' || AppState.currentUser.role === 'developer';
     if (!isAdmin) {
@@ -837,9 +813,6 @@ function renderAdminTab() {
     `;
 }
 
-// ============================================================
-// SETTINGS FUNCTIONS
-// ============================================================
 function handlePfpUpload(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -890,9 +863,6 @@ function setTheme(theme) {
     renderApp();
 }
 
-// ============================================================
-// ADMIN FUNCTIONS
-// ============================================================
 function postUpdate() {
     const title = document.getElementById('updateTitle')?.value;
     const body = document.getElementById('updateBody')?.value;
@@ -907,9 +877,6 @@ function postUpdate() {
     renderApp();
 }
 
-// ============================================================
-// PLANS MODAL
-// ============================================================
 function showPlansModal() {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
@@ -964,9 +931,6 @@ function selectPlan(planId) {
     renderApp();
 }
 
-// ============================================================
-// AUTH
-// ============================================================
 function login() {
     const email = document.querySelector('input[type="email"]')?.value || 'user@blanklog.com';
     const name = email.split('@')[0];
@@ -978,9 +942,6 @@ function login() {
     renderApp();
 }
 
-// ============================================================
-// RENDER APP
-// ============================================================
 function renderApp() {
     if (!AppState.isAuthenticated) {
         document.getElementById('root').innerHTML = `
@@ -1027,12 +988,10 @@ function renderApp() {
     `;
 }
 
-// ============================================================
-// INITIALIZE
-// ============================================================
 renderApp();
 
 window.setActiveTab = setActiveTab;
+window.toggleMobileMore = toggleMobileMore;
 window.handlePfpUpload = handlePfpUpload;
 window.handleBannerUpload = handleBannerUpload;
 window.saveProfileSettings = saveProfileSettings;
