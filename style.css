@@ -1,207 +1,82 @@
-/* Chunk 2: Object List & Properties */
-#objectList { display: flex; flex-direction: column; gap: 6px; }
+* { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --bg-primary: #0a0a0a; --bg-secondary: #111111; --bg-card: rgba(255, 255, 255, 0.04);
+    --text-primary: #ffffff; --text-muted: rgba(255, 255, 255, 0.5);
+    --border-color: rgba(255, 255, 255, 0.08); --accent: #8b5cf6;
+}
+body { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+
+/* --- RESTORED PUBLIC SITE STYLES --- */
+.sidebar { position: fixed; left: 0; top: 0; height: 100%; width: 250px; background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 40; }
+.sidebar-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
+.logo-text { font-size: 20px; font-weight: 800; }
+.nav-menu { padding: 16px; flex: 1; }
+.nav-link { display: flex; align-items: center; padding: 12px 16px; border-radius: 8px; color: var(--text-muted); background: none; border: none; width: 100%; font-size: 15px; font-weight: 500; cursor: pointer; text-align: left; transition: 0.2s; margin-bottom: 4px; }
+.nav-link:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+.nav-link.active { background: rgba(139, 92, 246, 0.15); color: var(--accent); }
+
+.main-content { margin-left: 250px; padding: 48px; min-height: 100vh; }
+@media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; padding: 24px; } }
+
+h1 { font-size: 40px; font-weight: 700; margin-bottom: 16px; letter-spacing: -1px; }
+p.subtitle { font-size: 18px; color: var(--text-muted); margin-bottom: 32px; }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 32px; }
+.card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; transition: 0.3s; }
+.card:hover { border-color: rgba(139, 92, 246, 0.3); transform: translateY(-4px); }
+.card h3 { font-size: 24px; font-weight: 600; margin-bottom: 12px; }
+.card p { color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; }
+
+.btn { display: inline-block; background: var(--accent); color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 500; text-decoration: none; border: none; cursor: pointer; transition: 0.2s; }
+.btn:hover { background: #7c3aed; }
+.btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+.btn-outline:hover { border-color: var(--accent); background: rgba(139,92,246,0.1); }
+
+.footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border-color); margin-top: 64px; }
+
+/* --- HIDDEN TRIGGER & MODAL --- */
+.hidden-trigger { position: fixed; bottom: 16px; right: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1); cursor: pointer; font-size: 20px; z-index: 100; transition: 0.3s; }
+.hidden-trigger:hover { color: rgba(139, 92, 246, 0.5); }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-content { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; text-align: center; }
+.modal-input { background: var(--bg-primary); border: 1px solid var(--border-color); padding: 14px; border-radius: 8px; color: #fff; width: 100%; text-align: center; font-size: 18px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 16px; }
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.error-text { color: #ef4444; font-size: 13px; margin-bottom: 16px; display: none; }
+
+/* --- NEW 3D STUDIO STYLES (Only for Research Tab) --- */
+.studio-container { display: flex; flex: 1; height: calc(100vh - 80px); overflow: hidden; }
+.studio-panel { width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border-color); padding: 16px; display: flex; flex-direction: column; overflow-y: auto; }
+.studio-panel.right { border-right: none; border-left: 1px solid var(--border-color); }
+.studio-viewport { flex: 1; background: #000; position: relative; overflow: hidden; }
+canvas { display: block; width: 100%; height: 100%; }
+
+.panel-section { margin-bottom: 24px; }
+.panel-section h4 { font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 1px; }
+.object-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); cursor: pointer; margin-bottom: 8px; font-size: 13px; }
+.object-btn:hover { border-color: var(--accent); }
+
+.studio-controls label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; margin-top: 12px; }
+.studio-controls input[type="text"], .studio-controls select, .studio-controls textarea, .studio-controls input[type="color"] { width: 100%; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; color: white; font-family: monospace; font-size: 12px; }
+.studio-controls textarea { resize: vertical; min-height: 80px; }
+.studio-controls input[type="range"] { width: 100%; }
+
+.studio-header { height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--border-color); background: var(--bg-primary); flex-shrink: 0; }
+.studio-title { font-size: 18px; font-weight: 600; }
+.studio-actions { display: flex; gap: 10px; align-items: center; }
+
+.transform-buttons { display: flex; gap: 4px; background: var(--bg-secondary); padding: 4px; border-radius: 6px; border: 1px solid var(--border-color); }
+.transform-btn { background: none; border: none; color: var(--text-muted); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; }
+.transform-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+.transform-btn.active { background: var(--accent); color: white; }
+
+#objectList { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .object-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; }
 .object-item:hover { border-color: var(--accent); }
 .object-item.active { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); }
 .object-item span { font-size: 12px; color: var(--text-primary); }
 .object-item button { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; padding: 0 4px; }
 
-/* Chunk 2: Custom Code Editor */
 #codeInput { font-family: 'Monaco', 'Courier New', monospace; font-size: 11px; line-height: 1.4; background: #050505; color: #22c55e; border: 1px solid var(--border-color); }
 #codeInput:focus { outline: none; border-color: var(--accent); }
-/* Chunk 2: Object List & Properties */
-#objectList { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 6px; 
-    max-height: 200px;
-    overflow-y: auto;
-}
-.object-item { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 6px 8px; 
-    background: var(--bg-primary); 
-    border: 1px solid var(--border-color); 
-    border-radius: 6px; 
-    cursor: pointer; 
-    transition: 0.2s;
-}
-.object-item:hover { 
-    border-color: var(--accent); 
-}
-.object-item.active { 
-    border-color: var(--accent); 
-    background: rgba(139, 92, 246, 0.1); 
-}
-.object-item span { 
-    font-size: 12px; 
-    color: var(--text-primary); 
-}
-.object-item button { 
-    background: none; 
-    border: none; 
-    color: #ef4444; 
-    cursor: pointer; 
-    font-size: 14px; 
-    padding: 0 4px; 
-}
-.object-item button:hover {
-    color: #ff6b6b;
-}
-
-/* Chunk 2: Custom Code Editor */
-#codeInput { 
-    font-family: 'Monaco', 'Courier New', monospace; 
-    font-size: 11px; 
-    line-height: 1.4; 
-    background: #050505; 
-    color: #22c55e; 
-    border: 1px solid var(--border-color); 
-    width: 100%;
-    padding: 8px;
-    border-radius: 6px;
-    resize: vertical;
-    min-height: 80px;
-}
-#codeInput:focus { 
-    outline: none; 
-    border-color: var(--accent); 
-}
-
-/* Chunk 2: Viewport Canvas */
-.studio-viewport { 
-    flex: 1; 
-    background: #000; 
-    position: relative; 
-    overflow: hidden;
-    cursor: crosshair;
-}
-.studio-viewport canvas { 
-    display: block; 
-    width: 100%; 
-    height: 100%; 
-}
-/* Chunk 3: Studio Header & Controls */
-.studio-header { 
-    height: 70px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    padding: 0 24px; 
-    border-bottom: 1px solid var(--border-color); 
-    background: var(--bg-primary); 
-    flex-shrink: 0;
-}
-
-.studio-title { 
-    font-size: 18px; 
-    font-weight: 600; 
-    color: var(--text-primary);
-}
-
-.studio-actions { 
-    display: flex; 
-    gap: 10px; 
-    align-items: center;
-}
-
-.transform-buttons {
-    display: flex;
-    gap: 4px;
-    background: var(--bg-secondary);
-    padding: 4px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-}
-
-.transform-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    transition: 0.2s;
-}
-
-.transform-btn:hover {
-    color: var(--text-primary);
-    background: rgba(255,255,255,0.05);
-}
-
-.transform-btn.active {
-    background: var(--accent);
-    color: white;
-}
-/* Chunk 4: Final Polish & Scrollbars */
-
-/* Studio Panel Scrollbars */
-.studio-panel::-webkit-scrollbar {
-    width: 6px;
-}
-.studio-panel::-webkit-scrollbar-track {
-    background: transparent;
-}
-.studio-panel::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-}
-.studio-panel::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* Recording State */
-.recording-active {
-    animation: pulse-red 1.5s infinite;
-}
-
-@keyframes pulse-red {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-/* Input Ranges */
-input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    background: transparent;
-}
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    height: 16px;
-    width: 16px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    margin-top: -6px;
-}
-input[type="range"]::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 4px;
-    cursor: pointer;
-    background: var(--border-color);
-    border-radius: 2px;
-}
-
-/* Color Picker */
-input[type="color"] {
-    -webkit-appearance: none;
-    border: none;
-    width: 100%;
-    height: 32px;
-    border-radius: 6px;
-    cursor: pointer;
-    background: none;
-}
-input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-}
-input[type="color"]::-webkit-color-swatch {
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-}
