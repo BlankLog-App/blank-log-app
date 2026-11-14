@@ -1,21 +1,14 @@
 // ============================================================
-// BLANK LOG — MAIN SITE + 3D STUDIO (CHUNK 1)
+// BLANK LOG — MAIN SITE + RESEARCH LAB (UI BUILDER + ANALYTICS)
 // ============================================================
+
 const ACCESS_CODE = 'CASSIE-ENZO';
 
 let AppState = {
     isUnlocked: false,
     activeTab: 'home',
-    scene: null,
-    renderer: null,
-    camera: null,
-    controls: null,
-    transformControls: null,
-    selectedObject: null,
-    objects: [],
-    isRecording: false,
-    mediaRecorder: null,
-    recordedChunks: []
+    researchSubtab: 'builder', // 'builder' or 'analytics'
+    analyticsChart: null
 };
 
 const tabs = [
@@ -33,9 +26,6 @@ function getTabs() {
 
 function setActiveTab(tabId) {
     AppState.activeTab = tabId;
-    if (tabId !== 'research') {
-        if (AppState.renderer) { AppState.renderer.dispose(); AppState.renderer = null; }
-    }
     renderApp();
 }
 
@@ -118,270 +108,150 @@ function renderUpdatesTab() {
 }
 
 // ============================================================
-// 3D STUDIO SHELL
+// RESEARCH LAB (UI BUILDER + ANALYTICS)
 // ============================================================
 function renderResearchTab() {
     if (!AppState.isUnlocked) return `<div style="text-align:center; padding: 100px 20px;"><h1>Access Denied</h1></div>`;
     
     return `
         <div class="studio-header">
-            <div class="studio-title">3D Studio</div>
+            <div class="studio-title">Research Lab</div>
             <div class="studio-actions">
-                <div class="transform-buttons">
-                    <button class="transform-btn active" onclick="setTransformMode('translate')">Move</button>
-                    <button class="transform-btn" onclick="setTransformMode('rotate')">Rotate</button>
-                    <button class="transform-btn" onclick="setTransformMode('scale')">Scale</button>
-                </div>
-                <button class="btn" onclick="recordVideo()">${AppState.isRecording ? 'Stop Recording' : 'Record Video'}</button>
-                <button class="btn btn-outline" onclick="saveProject()">Save</button>
+                <button class="transform-btn ${AppState.researchSubtab === 'builder' ? 'active' : ''}" onclick="setResearchSubtab('builder')">UI Builder</button>
+                <button class="transform-btn ${AppState.researchSubtab === 'analytics' ? 'active' : ''}" onclick="setResearchSubtab('analytics')">Analytics Lab</button>
             </div>
         </div>
-        <div class="studio-container">
-            <div class="studio-panel">
-                <div class="panel-section">
-                    <h4>Add Objects</h4>
-                    <button class="object-btn" onclick="addObject('box')">◼ Cube</button>
-                    <button class="object-btn" onclick="addObject('sphere')">● Sphere</button>
-                    <button class="object-btn" onclick="addObject('cone')">▲ Cone</button>
-                    <button class="object-btn" onclick="addObject('cylinder')">⬒ Cylinder</button>
-                    <button class="object-btn" onclick="addObject('plane')">▬ Plane</button>
-                </div>
-                <div class="panel-section">
-                    <h4>Scene Objects</h4>
-                    <div id="objectList" style="font-size:13px; color:var(--text-muted);">No objects added.</div>
-                </div>
+        
+        <div id="research-content" style="flex: 1; display: flex; overflow: hidden;">
+            ${AppState.researchSubtab === 'builder' ? renderUIBuilder() : renderAnalyticsLab()}
+        </div>
+    `;
+}
+
+function setResearchSubtab(tab) {
+    AppState.researchSubtab = tab;
+    renderApp();
+    
+    if (tab === 'analytics') {
+        setTimeout(initAnalyticsChart, 100);
+    }
+}
+
+// ============================================================
+// 1. UI COMPONENT BUILDER
+// ============================================================
+function renderUIBuilder() {
+    return `
+        <div style="display: flex; width: 100%; height: 100%;">
+            <!-- Code Editor -->
+            <div style="width: 50%; padding: 16px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column;">
+                <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">HTML / CSS Code</h4>
+                <textarea id="uiCodeInput" style="flex: 1; background: #050505; color: #22c55e; font-family: monospace; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; resize: none;" placeholder="<div style='color: white; padding: 20px;'>Hello World</div>"></textarea>
+                <button class="btn" style="margin-top: 12px;" onclick="updatePreview()">Run / Preview</button>
             </div>
-
-            <div class="studio-viewport" id="viewportContainer"></div>
-
-            <div class="studio-panel right">
-                <div class="panel-section">
-                    <h4>Properties</h4>
-                    <div class="studio-controls">
-                        <label>Color</label>
-                        <input type="color" id="propColor" value="#8b5cf6" onchange="updateSelectedProperty('color', this.value)">
-                        <label>Scale</label>
-                        <input type="range" id="propScale" min="0.1" max="5" step="0.1" value="1" onchange="updateSelectedProperty('scale', this.value)">
-                    </div>
-                </div>
-                <div class="panel-section">
-                    <h4>Custom Code</h4>
-                    <textarea id="codeInput" placeholder="// Write custom Three.js code here..."></textarea>
-                    <button class="btn" style="width:100%; margin-top:8px; font-size:12px;" onclick="runCustomCode()">Run Code</button>
-                </div>
+            
+            <!-- Live Preview -->
+            <div style="width: 50%; padding: 16px; display: flex; flex-direction: column;">
+                <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">Live Preview</h4>
+                <iframe id="uiPreview" style="flex: 1; background: white; border: none; border-radius: 8px; width: 100%; height: 100%;"></iframe>
             </div>
         </div>
     `;
 }
+
+function updatePreview() {
+    const code = document.getElementById('uiCodeInput')?.value || '';
+    const iframe = document.getElementById('uiPreview');
+    if (iframe) {
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(code);
+        doc.close();
+    }
+}
+
 // ============================================================
-// CHUNK 2: THREE.JS ENGINE & OBJECT MANAGER
+// 2. ANALYTICS LAB
 // ============================================================
-
-function initThreeJS() {
-    const container = document.getElementById('viewportContainer');
-    if (!container || !window.THREE) return;
-
-    if (AppState.renderer) {
-        AppState.renderer.dispose();
-        container.innerHTML = '';
-    }
-
-    AppState.scene = new THREE.Scene();
-    AppState.scene.background = new THREE.Color(0x0a0a0a);
-    
-    const grid = new THREE.GridHelper(20, 20, 0x333333, 0x111111);
-    AppState.scene.add(grid);
-
-    AppState.camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
-    AppState.camera.position.set(5, 5, 5);
-    AppState.camera.lookAt(0, 0, 0);
-
-    AppState.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-    AppState.renderer.setSize(container.clientWidth, container.clientHeight);
-    AppState.renderer.shadowMap.enabled = true;
-    container.appendChild(AppState.renderer.domElement);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    AppState.scene.add(ambientLight);
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(10, 20, 10);
-    dirLight.castShadow = true;
-    AppState.scene.add(dirLight);
-
-    // Orbit Controls (Rotate camera around scene)
-    if (THREE.OrbitControls) {
-        AppState.controls = new THREE.OrbitControls(AppState.camera, AppState.renderer.domElement);
-        AppState.controls.enableDamping = true;
-        AppState.controls.dampingFactor = 0.05;
-    } else {
-        // Fallback if OrbitControls didn't load
-        console.warn('OrbitControls not loaded. Add the script tag to index.html.');
-    }
-
-    // Transform Controls (Move/Rotate/Scale objects)
-    if (THREE.TransformControls) {
-        AppState.transformControls = new THREE.TransformControls(AppState.camera, AppState.renderer.domElement);
-        AppState.transformControls.addEventListener('dragging-changed', function (event) {
-            if (AppState.controls) AppState.controls.enabled = !event.value;
-        });
-        AppState.scene.add(AppState.transformControls);
-    } else {
-        console.warn('TransformControls not loaded. Add the script tag to index.html.');
-    }
-
-    function animate() {
-        requestAnimationFrame(animate);
-        if (AppState.controls) AppState.controls.update();
-        if (AppState.renderer && AppState.scene && AppState.camera) {
-            AppState.renderer.render(AppState.scene, AppState.camera);
-        }
-    }
-    animate();
-
-    window.addEventListener('resize', () => {
-        if (!container || !AppState.renderer) return;
-        AppState.camera.aspect = container.clientWidth / container.clientHeight;
-        AppState.camera.updateProjectionMatrix();
-        AppState.renderer.setSize(container.clientWidth, container.clientHeight);
-    });
-
-    AppState.renderer.domElement.addEventListener('pointerdown', onPointerDown);
-}
-
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
-
-function onPointerDown(event) {
-    if (!AppState.renderer || !AppState.camera) return;
-    
-    const rect = AppState.renderer.domElement.getBoundingClientRect();
-    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    raycaster.setFromCamera(pointer, AppState.camera);
-    const intersects = raycaster.intersectObjects(AppState.objects, true);
-
-    if (intersects.length > 0) {
-        selectObject(intersects[0].object);
-    } else {
-        selectObject(null);
-    }
-}
-
-function addObject(type) {
-    if (!AppState.scene) return;
-
-    let geometry;
-    switch(type) {
-        case 'sphere': geometry = new THREE.SphereGeometry(1, 32, 32); break;
-        case 'cone': geometry = new THREE.ConeGeometry(1, 2, 32); break;
-        case 'cylinder': geometry = new THREE.CylinderGeometry(1, 1, 2, 32); break;
-        case 'plane': geometry = new THREE.PlaneGeometry(2, 2); break;
-        default: geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-    }
-
-    const material = new THREE.MeshStandardMaterial({ 
-        color: 0x8b5cf6, 
-        roughness: 0.5,
-        metalness: 0.2
-    });
-    
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    mesh.position.set(
-        (Math.random() - 0.5) * 4, 
-        (Math.random() - 0.5) * 4, 
-        (Math.random() - 0.5) * 4
-    );
-    
-    mesh.name = type.charAt(0).toUpperCase() + type.slice(1);
-    mesh.userData.id = Date.now();
-
-    AppState.scene.add(mesh);
-    AppState.objects.push(mesh);
-    
-    selectObject(mesh);
-    updateObjectList();
-}
-
-function selectObject(mesh) {
-    if (AppState.transformControls) {
-        AppState.transformControls.detach();
-    }
-
-    AppState.selectedObject = mesh;
-
-    if (mesh && AppState.transformControls) {
-        AppState.transformControls.attach(mesh);
-    }
-
-    updateObjectList();
-    updatePropertiesPanel();
-}
-
-function updateObjectList() {
-    const list = document.getElementById('objectList');
-    if (!list) return;
-
-    if (AppState.objects.length === 0) {
-        list.innerHTML = 'No objects added.';
-        return;
-    }
-
-    list.innerHTML = AppState.objects.map((obj, i) => `
-        <div class="object-item ${AppState.selectedObject === obj ? 'active' : ''}" onclick="selectObject(AppState.objects[${i}])">
-            <span>${obj.name}</span>
-            <button onclick="event.stopPropagation(); deleteObject(${i})">×</button>
+function renderAnalyticsLab() {
+    return `
+        <div style="width: 100%; padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 24px; margin-bottom: 24px;">Business Analytics Lab</h1>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
+                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Total Users</h3><p style="font-size: 28px; font-weight: bold; margin-top: 8px;">1,248</p></div>
+                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Active Subscriptions</h3><p style="font-size: 28px; font-weight: bold; margin-top: 8px;">342</p></div>
+                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Monthly Revenue</h3><p style="font-size: 28px; font-weight: bold; margin-top: 8px; color: #22c55e;">$4,580</p></div>
+            </div>
+            
+            <div class="card" style="padding: 24px;">
+                <h3 style="font-size: 18px; margin-bottom: 16px;">User Growth (Simulated)</h3>
+                <canvas id="analyticsChart" style="width: 100%; height: 300px;"></canvas>
+            </div>
         </div>
-    `).join('');
+    `;
 }
 
-function deleteObject(index) {
-    const mesh = AppState.objects[index];
-    if (!mesh) return;
-
-    AppState.scene.remove(mesh);
-    AppState.objects.splice(index, 1);
-
-    if (AppState.selectedObject === mesh) {
-        selectObject(null);
-    }
+function initAnalyticsChart() {
+    const canvas = document.getElementById('analyticsChart');
+    if (!canvas) return;
     
-    updateObjectList();
+    if (AppState.analyticsChart) AppState.analyticsChart.destroy();
+
+    AppState.analyticsChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [
+                {
+                    label: 'Users',
+                    data: [150, 300, 500, 750, 1000, 1248],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Subscriptions',
+                    data: [20, 60, 120, 180, 250, 342],
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#ffffff' } } },
+            scales: {
+                x: { ticks: { color: '#888' }, grid: { color: '#222' } },
+                y: { ticks: { color: '#888' }, grid: { color: '#222' } }
+            }
+        }
+    });
 }
 
-function updatePropertiesPanel() {
-    const colorInput = document.getElementById('propColor');
-    const scaleInput = document.getElementById('propScale');
-    
-    if (AppState.selectedObject) {
-        if (colorInput) colorInput.value = '#' + AppState.selectedObject.material.color.getHexString();
-        if (scaleInput) scaleInput.value = AppState.selectedObject.scale.x;
+// ============================================================
+// MODAL & SECRET CODE
+// ============================================================
+function openModal() { document.getElementById('adminModal').classList.add('active'); }
+function closeModal() { document.getElementById('adminModal').classList.remove('active'); document.getElementById('accessCode').value = ''; document.getElementById('errorText').style.display = 'none'; }
+function verifyCode() {
+    const input = document.getElementById('accessCode').value.toUpperCase().trim();
+    if (input === ACCESS_CODE) {
+        AppState.isUnlocked = true;
+        closeModal();
+        renderApp();
+    } else {
+        document.getElementById('errorText').style.display = 'block';
     }
 }
 
-function updateSelectedProperty(prop, value) {
-    if (!AppState.selectedObject) return;
-
-    if (prop === 'color') {
-        AppState.selectedObject.material.color.set(value);
-    } else if (prop === 'scale') {
-        const s = parseFloat(value);
-        AppState.selectedObject.scale.set(s, s, s);
-    }
-}
-
-// Export chunk 2 functions
-window.addObject = addObject;
-window.selectObject = selectObject;
-window.deleteObject = deleteObject;
-window.updateSelectedProperty = updateSelectedProperty;
 // ============================================================
-// CHUNK 3: RENDER LOOP, MODAL & CUSTOM CODE
+// MAIN RENDER
 // ============================================================
-
 function renderApp() {
     let content = '';
     switch(AppState.activeTab) {
@@ -413,152 +283,20 @@ function renderApp() {
         </div>
     `;
 
-    // Add enter key listener for the input
     const input = document.getElementById('accessCode');
     if (input) {
         input.addEventListener('keypress', (e) => { if (e.key === 'Enter') verifyCode(); });
         input.focus();
     }
-
-    // Initialize 3D Studio if on Research tab
-    if (AppState.activeTab === 'research' && AppState.isUnlocked) {
-        setTimeout(initThreeJS, 50);
-    }
-}
-
-function setTransformMode(mode) {
-    if (AppState.transformControls) {
-        AppState.transformControls.setMode(mode);
-    }
-    document.querySelectorAll('.transform-btn').forEach(btn => btn.classList.remove('active'));
-    if (event && event.target) {
-        event.target.classList.add('active');
-    }
-}
-
-function runCustomCode() {
-    const code = document.getElementById('codeInput')?.value;
-    if (!code || !AppState.scene) return;
-
-    try {
-        // Wrap in a function to allow the user to use 'scene', 'selected', and 'THREE'
-        const func = new Function('scene', 'selected', 'THREE', code);
-        func(AppState.scene, AppState.selectedObject, THREE);
-    } catch (err) {
-        alert('Code Error: ' + err.message);
-    }
-}
-
-function openModal() { 
-    document.getElementById('adminModal').classList.add('active'); 
-}
-
-function closeModal() { 
-    document.getElementById('adminModal').classList.remove('active'); 
-    document.getElementById('accessCode').value = ''; 
-    document.getElementById('errorText').style.display = 'none'; 
-}
-
-function verifyCode() {
-    const input = document.getElementById('accessCode').value.toUpperCase().trim();
-    if (input === ACCESS_CODE) {
-        AppState.isUnlocked = true;
-        closeModal();
-        renderApp();
-    } else {
-        document.getElementById('errorText').style.display = 'block';
-    }
 }
 
 // Global exports
 window.setActiveTab = setActiveTab;
-window.setTransformMode = setTransformMode;
-window.runCustomCode = runCustomCode;
+window.setResearchSubtab = setResearchSubtab;
+window.updatePreview = updatePreview;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.verifyCode = verifyCode;
 
 // Initial render
 renderApp();
-// ============================================================
-// CHUNK 4: RECORDING & SAVING TO DATABASE
-// ============================================================
-
-function recordVideo() {
-    if (!AppState.renderer) return;
-    
-    if (AppState.isRecording) {
-        AppState.mediaRecorder.stop();
-        AppState.isRecording = false;
-        renderApp(); 
-        return;
-    }
-
-    try {
-        const canvas = AppState.renderer.domElement;
-        const stream = canvas.captureStream(60); // 60 FPS
-        AppState.mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
-        AppState.recordedChunks = [];
-
-        AppState.mediaRecorder.ondataavailable = e => {
-            if (e.data.size > 0) AppState.recordedChunks.push(e.data);
-        };
-
-        AppState.mediaRecorder.onstop = () => {
-            const blob = new Blob(AppState.recordedChunks, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'blank-log-ad-' + Date.now() + '.webm';
-            a.click();
-            URL.revokeObjectURL(url);
-            alert('Video recorded and downloaded! You can now use this for ads.');
-        };
-
-        AppState.mediaRecorder.start();
-        AppState.isRecording = true;
-        renderApp();
-    } catch (e) {
-        alert('Recording Error: ' + e.message);
-    }
-}
-
-async function saveProject() {
-    const title = prompt("Enter project name:", "My 3D Scene");
-    if (!title) return;
-    
-    // Serialize the scene objects
-    const sceneData = AppState.objects.map(obj => ({
-        name: obj.name,
-        position: { x: obj.position.x, y: obj.position.y, z: obj.position.z },
-        rotation: { x: obj.rotation.x, y: obj.rotation.y, z: obj.rotation.z },
-        scale: { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z },
-        color: obj.material.color.getHexString()
-    }));
-    
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert('You need to be logged in to save. (Login integration coming soon).');
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/research', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': 'Bearer ' + token 
-            },
-            body: JSON.stringify({ title, type: '3d_model', data: sceneData })
-        });
-        
-        if (res.ok) alert('Project saved successfully to database!');
-        else alert('Error saving project. Check console.');
-    } catch(e) { 
-        alert('Network error: ' + e.message); 
-    }
-}
-
-// Export recording and saving functions
-window.recordVideo = recordVideo;
-window.saveProject = saveProject;
