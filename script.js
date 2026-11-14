@@ -1,5 +1,5 @@
 // ============================================================
-// BLANK LOG — MAIN SITE + RESEARCH LAB (FINAL V2)
+// BLANK LOG — MAIN SITE + RESEARCH LAB (REAL DATA)
 // ============================================================
 
 const ACCESS_CODE = 'CASSIE-ENZO';
@@ -7,21 +7,14 @@ const ACCESS_CODE = 'CASSIE-ENZO';
 let AppState = {
     isUnlocked: false,
     activeTab: 'home',
-    researchSubtab: 'video', // 'video', 'builder', 'analytics', 'courses', 'intelligence', 'marketing'
+    researchSubtab: 'analytics', // Default to analytics
     analyticsChart: null,
-    courses: [
-        { title: 'Prompt Engineering 101', desc: 'Learn how to write prompts that actually work.', date: 'Today' },
-        { title: 'Building AI Agents', desc: 'How to connect LLMs to tools and APIs.', date: 'Yesterday' },
-        { title: 'Fine-Tuning Models', desc: 'How to train base models on your own data.', date: '2 days ago' }
-    ],
-    intel: [
-        { title: 'OpenAI Releases GPT-5', desc: 'OpenAI announced GPT-5 with a massive leap in reasoning.', date: 'June 2026' },
-        { title: 'Anthropic Raises $2B', desc: 'Anthropic closed a $2B funding round led by Google.', date: 'May 2026' }
-    ],
-    marketingIdeas: [
-        { title: 'Launch on Product Hunt', desc: 'Coordinate a launch for DevAI on Product Hunt.' },
-        { title: 'Twitter/X Thread', desc: 'Write a thread breaking down "How to build an AI app in 2026".' }
-    ]
+    appData: {
+        devai: { users: [], revenue: [], views: [] },
+        pulseai: { users: [], revenue: [], views: [] },
+        insightai: { users: [], revenue: [], views: [] }
+    },
+    marketingOutput: ''
 };
 
 const tabs = [
@@ -127,12 +120,10 @@ function renderResearchTab() {
     if (!AppState.isUnlocked) return `<div style="text-align:center; padding: 100px 20px;"><h1>Access Denied</h1></div>`;
     
     const subtabs = [
-        { id: 'video', label: 'Video Studio' },
-        { id: 'builder', label: 'UI Builder' },
         { id: 'analytics', label: 'Analytics' },
+        { id: 'marketing', label: 'Marketing' },
         { id: 'courses', label: 'AI Courses' },
-        { id: 'intelligence', label: 'Intelligence' },
-        { id: 'marketing', label: 'Marketing' }
+        { id: 'intelligence', label: 'Intelligence' }
     ];
 
     return `
@@ -154,211 +145,223 @@ function renderResearchTab() {
 function setResearchSubtab(tab) {
     AppState.researchSubtab = tab;
     renderApp();
-    if (tab === 'analytics') setTimeout(initAnalyticsChart, 100);
+    if (tab === 'analytics') setTimeout(initAnalyticsCharts, 100);
 }
 
 function renderResearchContent() {
     switch(AppState.researchSubtab) {
-        case 'video': return renderVideoStudio();
-        case 'builder': return renderUIBuilder();
         case 'analytics': return renderAnalyticsLab();
+        case 'marketing': return renderMarketing();
         case 'courses': return renderCourses();
         case 'intelligence': return renderIntelligence();
-        case 'marketing': return renderMarketing();
-        default: return renderVideoStudio();
+        default: return renderAnalyticsLab();
     }
 }
 
 // ============================================================
-// FEATURE 1: VIDEO STUDIO
-// ============================================================
-function renderVideoStudio() {
-    return `
-        <div style="width: 100%; padding: 24px; overflow-y: auto;">
-            <h1 style="font-size: 24px; margin-bottom: 8px;">Video Ad Studio</h1>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">Generate realistic video ads using AI.</p>
-            <div class="card" style="padding: 24px;">
-                <label style="font-size: 14px; color: var(--text-muted); display: block; margin-bottom: 8px;">Ad Prompt</label>
-                <textarea id="videoPromptInput" rows="3" style="width: 100%; background: #050505; color: white; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 16px;" placeholder="e.g., A cinematic shot of a sneaker on a wet street..."></textarea>
-                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
-                    <select style="background: #050505; color: white; border: 1px solid var(--border-color); padding: 10px; border-radius: 8px;">
-                        <option>Google Veo 3.1</option>
-                        <option>Runway Gen-4</option>
-                    </select>
-                    <button class="btn" onclick="alert('Connect Veo/Runway API to generate video.')">Generate Video</button>
-                </div>
-                <div style="width: 100%; height: 400px; background: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
-                    <p style="color: var(--text-muted);">Generated video will appear here</p>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// ============================================================
-// FEATURE 2: UI BUILDER
-// ============================================================
-function renderUIBuilder() {
-    return `
-        <div style="display: flex; width: 100%; height: 100%;">
-            <div style="width: 50%; padding: 16px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column;">
-                <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">HTML / CSS</h4>
-                <textarea id="uiCodeInput" style="flex: 1; background: #050505; color: #22c55e; font-family: monospace; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); resize: none;"></textarea>
-                <button class="btn" style="margin-top: 12px;" onclick="updatePreview()">Run Preview</button>
-            </div>
-            <div style="width: 50%; padding: 16px; display: flex; flex-direction: column;">
-                <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">Live Preview</h4>
-                <iframe id="uiPreview" style="flex: 1; background: white; border: none; border-radius: 8px;"></iframe>
-            </div>
-        </div>
-    `;
-}
-
-function updatePreview() {
-    const code = document.getElementById('uiCodeInput')?.value || '';
-    const iframe = document.getElementById('uiPreview');
-    if (iframe) {
-        const doc = iframe.contentWindow.document;
-        doc.open();
-        doc.write(code);
-        doc.close();
-    }
-}
-
-// ============================================================
-// FEATURE 3: ANALYTICS LAB (STOCK STYLE)
+// FEATURE 1: ANALYTICS (CANDLESTICK & REAL DATA)
 // ============================================================
 function renderAnalyticsLab() {
     return `
         <div style="width: 100%; padding: 24px; overflow-y: auto;">
-            <h1 style="font-size: 24px; margin-bottom: 24px;">Analytics Lab</h1>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
-                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Total Users</h3><p style="font-size: 28px; font-weight: bold; color: #8b5cf6;">1,248</p></div>
-                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Active Subscriptions</h3><p style="font-size: 28px; font-weight: bold; color: #22c55e;">342</p></div>
-                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Monthly Revenue</h3><p style="font-size: 28px; font-weight: bold; color: #22c55e;">$4,580</p></div>
-            </div>
-            <div class="card" style="padding: 24px;">
-                <h3 style="font-size: 18px; margin-bottom: 16px;">User Growth Chart</h3>
-                <canvas id="analyticsChart" style="width: 100%; height: 300px;"></canvas>
-            </div>
-        </div>
-    `;
-}
-
-function initAnalyticsChart() {
-    const canvas = document.getElementById('analyticsChart');
-    if (!canvas) return;
-    if (AppState.analyticsChart) AppState.analyticsChart.destroy();
-
-    AppState.analyticsChart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [
-                {
-                    label: 'Users',
-                    data: [150, 300, 500, 750, 1000, 1248],
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#8b5cf6'
-                },
-                {
-                    label: 'Subscriptions',
-                    data: [20, 60, 120, 180, 250, 342],
-                    borderColor: '#22c55e',
-                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#22c55e'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                legend: { labels: { color: '#ffffff' } } 
-            },
-            scales: {
-                x: { ticks: { color: '#888' }, grid: { color: '#1a1a1a' } },
-                y: { ticks: { color: '#888' }, grid: { color: '#1a1a1a' } }
-            }
-        }
-    });
-}
-
-// ============================================================
-// FEATURE 4: AI COURSES (4 new ones a day)
-// ============================================================
-function renderCourses() {
-    return `
-        <div style="width: 100%; padding: 24px; overflow-y: auto;">
-            <h1 style="font-size: 24px; margin-bottom: 24px;">AI Courses (4 new today)</h1>
-            <div class="card-grid">
-                ${AppState.courses.map(course => `
-                    <div class="card">
-                        <h3>${course.title}</h3>
-                        <p>${course.desc}</p>
-                        <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 12px;">${course.date}</span>
-                        <button class="btn">Start Course</button>
+            <h1 style="font-size: 24px; margin-bottom: 8px;">App Analytics</h1>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Real-time data. Currently showing $0 until apps are live.</p>
+            
+            <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <!-- DevAI Chart -->
+                <div class="card" style="padding: 16px;">
+                    <h3 style="font-size: 16px; margin-bottom: 12px;">DevAI</h3>
+                    <div style="height: 150px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
+                        <span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span>
                     </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
-}
-
-// ============================================================
-// FEATURE 5: INTELLIGENCE
-// ============================================================
-function renderIntelligence() {
-    return `
-        <div style="width: 100%; padding: 24px; overflow-y: auto;">
-            <h1 style="font-size: 24px; margin-bottom: 24px;">AI Company Intelligence</h1>
-            <div class="card" style="padding: 24px; margin-bottom: 24px;">
-                <h3 style="font-size: 16px; margin-bottom: 12px;">Paste a link to get an AI summary</h3>
-                <input type="text" placeholder="https://..." style="width: 100%; padding: 12px; background: #050505; border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 12px;">
-                <button class="btn">Summarize & Save</button>
-            </div>
-            <div class="card-grid">
-                ${AppState.intel.map(item => `
-                    <div class="card">
-                        <h3>${item.title}</h3>
-                        <p>${item.desc}</p>
-                        <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 12px;">${item.date}</span>
+                </div>
+                
+                <!-- PulseAI Chart -->
+                <div class="card" style="padding: 16px;">
+                    <h3 style="font-size: 16px; margin-bottom: 12px;">PulseAI</h3>
+                    <div style="height: 150px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
+                        <span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span>
                     </div>
-                `).join('')}
+                </div>
+                
+                <!-- InsightAI Chart -->
+                <div class="card" style="padding: 16px;">
+                    <h3 style="font-size: 16px; margin-bottom: 12px;">InsightAI</h3>
+                    <div style="height: 150px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
+                        <span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span>
+                    </div>
+                </div>
             </div>
         </div>
     `;
 }
 
+function initAnalyticsCharts() {
+    // Will be used once apps are live and sending real data
+}
+
 // ============================================================
-// FEATURE 6: MARKETING
+// FEATURE 2: MARKETING (CAMPAIGN GENERATOR)
 // ============================================================
 function renderMarketing() {
     return `
         <div style="width: 100%; padding: 24px; overflow-y: auto;">
-            <h1 style="font-size: 24px; margin-bottom: 24px;">Marketing Ideas Board</h1>
+            <h1 style="font-size: 24px; margin-bottom: 8px;">Marketing Generator</h1>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Generate ad copy for your apps.</p>
+            
             <div class="card" style="padding: 24px; margin-bottom: 24px;">
-                <input type="text" id="marketingTitle" placeholder="Idea Title..." style="width: 100%; padding: 12px; background: #050505; border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 12px;">
-                <textarea id="marketingDesc" placeholder="Describe the idea..." rows="3" style="width: 100%; padding: 12px; background: #050505; border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 12px;"></textarea>
-                <button class="btn" onclick="alert('Connected to database to save ideas.')">Save Idea</button>
+                <label style="font-size: 14px; color: var(--text-muted); display: block; margin-bottom: 8px;">Product / App</label>
+                <input type="text" id="marketingProduct" placeholder="e.g., DevAI" style="width: 100%; padding: 12px; background: #050505; border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 16px;">
+                
+                <label style="font-size: 14px; color: var(--text-muted); display: block; margin-bottom: 8px;">Platform</label>
+                <select id="marketingPlatform" style="width: 100%; padding: 12px; background: #050505; border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 16px;">
+                    <option>Twitter / X</option>
+                    <option>LinkedIn</option>
+                    <option>Instagram</option>
+                    <option>Email</option>
+                </select>
+                
+                <button class="btn" onclick="generateCampaign()">Generate Campaign</button>
             </div>
+            
+            <div class="card" style="padding: 24px;">
+                <h3 style="font-size: 18px; margin-bottom: 12px;">Generated Output</h3>
+                <div id="marketingOutput" style="background: #050505; padding: 16px; border-radius: 8px; min-height: 100px; border: 1px solid var(--border-color); color: var(--text-muted);">
+                    Your generated ad copy will appear here.
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function generateCampaign() {
+    const product = document.getElementById('marketingProduct')?.value;
+    const platform = document.getElementById('marketingPlatform')?.value;
+    const outputDiv = document.getElementById('marketingOutput');
+
+    if (!product) {
+        alert('Please enter a product name.');
+        return;
+    }
+
+    outputDiv.innerHTML = '<span style="color: var(--text-muted);">Generating...</span>';
+
+    try {
+        const res = await fetch('/api/marketing', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product, platform })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            outputDiv.innerHTML = data.copy;
+        } else {
+            outputDiv.innerHTML = '<span style="color: #ef4444;">Error generating copy.</span>';
+        }
+    } catch (e) {
+        outputDiv.innerHTML = '<span style="color: #ef4444;">Network error. Backend not connected.</span>';
+    }
+}
+
+// ============================================================
+// FEATURE 3: AI COURSES (4 Real Courses)
+// ============================================================
+function renderCourses() {
+    const courses = [
+        { 
+            title: '1. Prompt Engineering 101', 
+            desc: 'Learn how to structure system prompts, use few-shot examples, and control output formatting for consistent AI results.',
+            content: 'Prompt engineering is the practice of designing inputs to get optimal outputs. Key techniques: 1) Role prompting ("You are a senior developer..."). 2) Chain-of-thought ("Think step by step..."). 3) Few-shot examples (give 2-3 examples of desired output). 4) Output constraints ("Respond in JSON format").'
+        },
+        { 
+            title: '2. Building AI Agents', 
+            desc: 'Understand how to connect LLMs to external tools, APIs, and memory to create autonomous agents.',
+            content: 'AI agents use LLMs as a reasoning engine. They receive a goal, break it into steps, and execute tools (search, calculator, database). Key architecture: Goal → Plan → Tool Execution → Observation → Repeat. Popular frameworks include LangChain and CrewAI.'
+        },
+        { 
+            title: '3. Fine-Tuning Models', 
+            desc: 'Learn when to fine-tune vs. prompt, and how to prepare datasets for training custom models.',
+            content: 'Fine-tuning is training a base model on your specific data. Use it when prompt engineering isn\'t enough (e.g., highly specialized domain). Steps: 1) Gather 100+ high-quality examples. 2) Format as JSONL. 3) Upload to OpenAI/Anthropic. 4) Train. 5) Evaluate.'
+        },
+        { 
+            title: '4. RAG (Retrieval-Augmented Generation)', 
+            desc: 'Connect AI to your own documents and databases to answer questions with real data.',
+            content: 'RAG lets AI search your data before answering. Steps: 1) Chunk your documents. 2) Embed them as vectors (using OpenAI embeddings). 3) Store in a vector database (Pinecone/Supabase). 4) When user asks a question, search for relevant chunks. 5) Inject those chunks into the prompt.'
+        }
+    ];
+
+    return `
+        <div style="width: 100%; padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 24px; margin-bottom: 24px;">AI Courses</h1>
             <div class="card-grid">
-                ${AppState.marketingIdeas.map(idea => `
+                ${courses.map((course, index) => `
                     <div class="card">
-                        <h3>${idea.title}</h3>
-                        <p>${idea.desc}</p>
+                        <h3 style="font-size: 16px;">${course.title}</h3>
+                        <p style="font-size: 13px;">${course.desc}</p>
+                        <button class="btn" style="margin-top: 12px; font-size: 12px;" onclick="alert('${course.content.replace(/'/g, "\\'")}')">Read Content</button>
                     </div>
                 `).join('')}
             </div>
         </div>
     `;
+}
+
+// ============================================================
+// FEATURE 4: INTELLIGENCE (COMPETITOR TRACKER)
+// ============================================================
+function renderIntelligence() {
+    return `
+        <div style="width: 100%; padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 24px; margin-bottom: 8px;">Competitor Tracker</h1>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Paste a link from OpenAI, Anthropic, or Google. AI will summarize it and save it.</p>
+            
+            <div class="card" style="padding: 24px; margin-bottom: 24px;">
+                <input type="text" id="intelUrl" placeholder="https://openai.com/blog/..." style="width: 100%; padding: 12px; background: #050505; border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 12px;">
+                <button class="btn" onclick="trackCompetitor()">Analyze & Save</button>
+            </div>
+            
+            <div id="intelFeed">
+                <div class="card" style="padding: 24px; text-align: center; color: var(--text-muted);">
+                    No intelligence saved yet. Paste a link above to start.
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function trackCompetitor() {
+    const url = document.getElementById('intelUrl')?.value;
+    if (!url) {
+        alert('Please paste a URL.');
+        return;
+    }
+
+    const feed = document.getElementById('intelFeed');
+    feed.innerHTML = '<div class="card" style="padding: 24px; text-align: center; color: var(--text-muted);">Analyzing...</div>';
+
+    try {
+        const res = await fetch('/api/intel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            feed.innerHTML = `
+                <div class="card" style="padding: 24px;">
+                    <h3 style="font-size: 16px; margin-bottom: 8px;">${data.title}</h3>
+                    <p style="font-size: 14px;">${data.summary}</p>
+                    <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 12px;">Source: ${url}</span>
+                </div>
+            `;
+        } else {
+            feed.innerHTML = '<div class="card" style="padding: 24px; text-align: center; color: #ef4444;">Failed to analyze.</div>';
+        }
+    } catch (e) {
+        feed.innerHTML = '<div class="card" style="padding: 24px; text-align: center; color: #ef4444;">Backend not connected.</div>';
+    }
 }
 
 // ============================================================
@@ -421,7 +424,8 @@ function renderApp() {
 // Global exports
 window.setActiveTab = setActiveTab;
 window.setResearchSubtab = setResearchSubtab;
-window.updatePreview = updatePreview;
+window.generateCampaign = generateCampaign;
+window.trackCompetitor = trackCompetitor;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.verifyCode = verifyCode;
