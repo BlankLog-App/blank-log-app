@@ -215,11 +215,11 @@ function renderMarketing() {
                 
                 <label style="font-size: 14px; color: var(--text-muted); display: block; margin-bottom: 8px;">Platform</label>
                 <select id="marketingPlatform" style="width: 100%; padding: 12px; background: #050505; border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 16px;">
-                    <option>Twitter / X</option>
-                    <option>LinkedIn</option>
-                    <option>Instagram</option>
-                    <option>Email</option>
-                </select>
+    <option>YouTube</option>
+    <option>TikTok</option>
+    <option>Instagram</option>
+    <option>Twitter / X</option>
+</select>
                 
                 <button class="btn" onclick="generateCampaign()">Generate Campaign</button>
             </div>
@@ -265,41 +265,105 @@ async function generateCampaign() {
 }
 
 // ============================================================
-// FEATURE 3: AI COURSES (4 Real Courses)
+// AI COURSES (Interactive Wizard & 85% Pass Requirement)
 // ============================================================
+
+// 1. Course Data (Includes Meme Coins & Kalshi)
+const courseData = {
+    'prompt-eng': {
+        title: 'Prompt Engineering 101',
+        desc: 'Learn how to structure system prompts and control AI output.',
+        steps: [
+            { type: 'reading', content: 'Prompt engineering is the art of guiding AI. A good prompt includes a role, context, and specific constraints. Always tell the AI who it is (e.g., "You are a senior developer") and exactly what format you want (e.g., "Reply in JSON").' },
+            { type: 'questions', questions: [
+                { q: 'What is the first thing you should define in a prompt?', options: ['The role', 'The temperature', 'The API key'], answer: 0 },
+                { q: 'Which format is best for structured data?', options: ['A poem', 'JSON', 'A story'], answer: 1 },
+                { q: 'What does few-shot prompting mean?', options: ['Giving examples', 'Using fewer tokens', 'Lowering the temperature'], answer: 0 }
+            ]},
+            { type: 'reading', content: 'Now let\'s talk about temperature. Temperature controls randomness. A temperature of 0 is deterministic (good for code), while a temperature of 0.8 is creative (good for marketing). Always set this based on the task.' },
+            { type: 'videos', videos: [
+                { title: 'Prompt Engineering Basics', duration: '24 min', url: 'https://youtube.com/watch?v=example1' },
+                { title: 'Advanced Prompting Techniques', duration: '28 min', url: 'https://youtube.com/watch?v=example2' }
+            ]},
+            { type: 'reading', content: 'The videos above showed you how to chain prompts together. Chain-of-thought prompting is when you tell the AI to "think step by step." This dramatically improves reasoning on complex math and logic problems.' },
+            { type: 'reading', content: 'Finally, always validate your AI output. Never trust the AI blindly. Use code to check if the output matches your expected schema before using it in your app.' },
+            { type: 'final_test', questions: [
+                { q: 'What does temperature 0 do?', options: ['Makes it creative', 'Makes it deterministic', 'Turns it off'], answer: 1 },
+                { q: 'What is chain-of-thought?', options: ['Thinking step-by-step', 'Using a blockchain', 'A type of prompt injection'], answer: 0 },
+                { q: 'Should you validate AI output?', options: ['No, trust it', 'Yes, always', 'Only for code'], answer: 1 }
+            ]}
+        ]
+    },
+    'meme-coins': {
+        title: 'Meme Coins & Market Psychology',
+        desc: 'Understand the hype cycles and psychology behind meme coin trading.',
+        steps: [
+            { type: 'reading', content: 'Meme coins are driven entirely by community sentiment and virality, not underlying fundamentals. The key to trading them is understanding the "Hype Cycle": Accumulation, Markup, Distribution, and Markdown.' },
+            { type: 'questions', questions: [
+                { q: 'What drives meme coin prices?', options: ['Company earnings', 'Community sentiment', 'Government policy'], answer: 1 },
+                { q: 'What is the "Markup" phase?', options: ['When price drops', 'When price rises fast', 'When volume is flat'], answer: 1 },
+                { q: 'Are meme coins safe long-term?', options: ['Yes', 'No', 'Only Bitcoin'], answer: 1 }
+            ]},
+            { type: 'reading', content: 'Liquidity is critical. If a meme coin has low liquidity, a large sell order will crash the price instantly (slippage). Always check the liquidity pool on decentralized exchanges before buying.' },
+            { type: 'videos', videos: [
+                { title: 'How Meme Coins Pump and Dump', duration: '22 min', url: 'https://youtube.com/watch?v=example3' },
+                { title: 'Reading Crypto Charts for Beginners', duration: '25 min', url: 'https://youtube.com/watch?v=example4' }
+            ]},
+            { type: 'reading', content: 'The videos explained how to spot volume spikes. If the price is going up but volume is going down, that is a bearish divergence. It means the hype is dying. Look for price and volume moving together.' },
+            { type: 'reading', content: 'Risk management is the most important part. Never put more than 1-2% of your portfolio into a single meme coin. Use stop-losses and take profits on the way up. Greed kills traders.' },
+            { type: 'final_test', questions: [
+                { q: 'What is slippage?', options: ['Price impact of a trade', 'A type of wallet', 'A trading fee'], answer: 0 },
+                { q: 'What is a bearish divergence?', options: ['Price up, volume down', 'Price down, volume up', 'Both up'], answer: 0 },
+                { q: 'How much of your portfolio should go into one meme coin?', options: ['100%', '1-2%', '50%'], answer: 1 }
+            ]}
+        ]
+    },
+    'kalshi': {
+        title: 'Kalshi Prediction Markets',
+        desc: 'Learn how to trade real-world events on Kalshi.',
+        steps: [
+            { type: 'reading', content: 'Kalshi is a regulated prediction market where you buy "Yes" or "No" contracts on real-world events. Prices range from $0.01 to $0.99. If you buy a "Yes" contract at $0.60 and the event happens, you get $1.00. If it doesn\'t, you get $0.' },
+            { type: 'questions', questions: [
+                { q: 'What does a $0.60 Yes contract mean?', options: ['60% probability', '60 cents profit', '60 days to resolve'], answer: 0 },
+                { q: 'What happens if the event resolves "No"?', options: ['You get $1', 'You lose your stake', 'You get a refund'], answer: 1 },
+                { q: 'Is Kalshi regulated?', options: ['No', 'Yes', 'Only in Europe'], answer: 1 }
+            ]},
+            { type: 'reading', content: 'The price of a contract is essentially the market\'s consensus probability. If a contract is trading at $0.40, the market believes there is a 40% chance it will happen. Your job is to find markets where you believe the true probability is higher than the market price (an "edge").' },
+            { type: 'videos', videos: [
+                { title: 'How Kalshi Works', duration: '20 min', url: 'https://youtube.com/watch?v=example5' },
+                { title: 'Advanced Prediction Market Strategies', duration: '30 min', url: 'https://youtube.com/watch?v=example6' }
+            ]},
+            { type: 'reading', content: 'The videos covered the "Kelly Criterion" for position sizing. It helps you calculate the optimal amount to bet based on your edge and bankroll. Never bet more than 5% of your bankroll on a single market, regardless of how confident you are.' },
+            { type: 'reading', content: 'Finally, always do your own research. Read the actual rules of the contract. Sometimes there are technicalities in how a market resolves that can surprise you. Trade the rules, not just the headlines.' },
+            { type: 'final_test', questions: [
+                { q: 'What does a $0.40 No contract mean?', options: ['40% chance of No', '60% chance of No', '40% profit'], answer: 1 },
+                { q: 'What is the Kelly Criterion?', options: ['A betting strategy', 'A stock index', 'A type of order'], answer: 0 },
+                { q: 'What should you always read?', options: ['The headlines', 'The contract rules', 'Twitter'], answer: 1 }
+            ]}
+        ]
+    }
+};
+
+// 2. State for the Course Wizard
+let currentCourse = null;
+let currentStep = 0;
+let testScore = 0;
+
+// 3. Render Courses List
 function renderCourses() {
-    const courses = [
-        { 
-            title: '1. Prompt Engineering 101', 
-            desc: 'Learn how to structure system prompts, use few-shot examples, and control output formatting for consistent AI results.',
-            content: 'Prompt engineering is the practice of designing inputs to get optimal outputs. Key techniques: 1) Role prompting ("You are a senior developer..."). 2) Chain-of-thought ("Think step by step..."). 3) Few-shot examples (give 2-3 examples of desired output). 4) Output constraints ("Respond in JSON format").'
-        },
-        { 
-            title: '2. Building AI Agents', 
-            desc: 'Understand how to connect LLMs to external tools, APIs, and memory to create autonomous agents.',
-            content: 'AI agents use LLMs as a reasoning engine. They receive a goal, break it into steps, and execute tools (search, calculator, database). Key architecture: Goal → Plan → Tool Execution → Observation → Repeat. Popular frameworks include LangChain and CrewAI.'
-        },
-        { 
-            title: '3. Fine-Tuning Models', 
-            desc: 'Learn when to fine-tune vs. prompt, and how to prepare datasets for training custom models.',
-            content: 'Fine-tuning is training a base model on your specific data. Use it when prompt engineering isn\'t enough (e.g., highly specialized domain). Steps: 1) Gather 100+ high-quality examples. 2) Format as JSONL. 3) Upload to OpenAI/Anthropic. 4) Train. 5) Evaluate.'
-        },
-        { 
-            title: '4. RAG (Retrieval-Augmented Generation)', 
-            desc: 'Connect AI to your own documents and databases to answer questions with real data.',
-            content: 'RAG lets AI search your data before answering. Steps: 1) Chunk your documents. 2) Embed them as vectors (using OpenAI embeddings). 3) Store in a vector database (Pinecone/Supabase). 4) When user asks a question, search for relevant chunks. 5) Inject those chunks into the prompt.'
-        }
-    ];
+    if (currentCourse) {
+        return renderCourseWizard();
+    }
 
     return `
         <div style="width: 100%; padding: 24px; overflow-y: auto;">
             <h1 style="font-size: 24px; margin-bottom: 24px;">AI Courses</h1>
             <div class="card-grid">
-                ${courses.map((course, index) => `
+                ${Object.keys(courseData).map(key => `
                     <div class="card">
-                        <h3 style="font-size: 16px;">${course.title}</h3>
-                        <p style="font-size: 13px;">${course.desc}</p>
-                        <button class="btn" style="margin-top: 12px; font-size: 12px;" onclick="alert('${course.content.replace(/'/g, "\\'")}')">Read Content</button>
+                        <h3 style="font-size: 16px;">${courseData[key].title}</h3>
+                        <p style="font-size: 13px; color: var(--text-muted);">${courseData[key].desc}</p>
+                        <button class="btn" style="margin-top: 12px; font-size: 12px;" onclick="startCourse('${key}')">Start Course</button>
                     </div>
                 `).join('')}
             </div>
@@ -307,6 +371,162 @@ function renderCourses() {
     `;
 }
 
+// 4. Start Course
+function startCourse(courseId) {
+    currentCourse = courseData[courseId];
+    currentStep = 0;
+    testScore = 0;
+    renderApp();
+}
+
+// 5. Render Wizard
+function renderCourseWizard() {
+    const step = currentCourse.steps[currentStep];
+    
+    if (!step) {
+        // Course finished
+        return `
+            <div style="width: 100%; padding: 24px; text-align: center;">
+                <h1 style="font-size: 28px; color: #22c55e; margin-bottom: 16px;">🎉 Course Complete!</h1>
+                <p style="margin-bottom: 24px;">You have finished ${currentCourse.title}.</p>
+                <button class="btn" onclick="currentCourse = null; renderApp();">Back to Courses</button>
+            </div>
+        `;
+    }
+
+    let content = '';
+    
+    if (step.type === 'reading') {
+        content = `
+            <p style="font-size: 16px; line-height: 1.8; color: #ccc;">${step.content}</p>
+            <button class="btn" style="margin-top: 24px;" onclick="nextCourseStep()">Continue →</button>
+        `;
+    } 
+    else if (step.type === 'questions') {
+        content = `
+            <h3 style="font-size: 18px; margin-bottom: 16px;">Check Your Understanding</h3>
+            <form id="questionForm" onsubmit="submitQuestions(event)">
+                ${step.questions.map((q, i) => `
+                    <div style="margin-bottom: 20px;">
+                        <p style="font-weight: 500; margin-bottom: 8px;">${i + 1}. ${q.q}</p>
+                        ${q.options.map((opt, optIndex) => `
+                            <label style="display: block; margin-bottom: 6px; cursor: pointer;">
+                                <input type="radio" name="q${i}" value="${optIndex}" required style="margin-right: 8px;">
+                                ${opt}
+                            </label>
+                        `).join('')}
+                    </div>
+                `).join('')}
+                <button type="submit" class="btn">Submit Answers</button>
+            </form>
+        `;
+    }
+    else if (step.type === 'videos') {
+        content = `
+            <h3 style="font-size: 18px; margin-bottom: 16px;">Watch These Videos</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">(In a real app, these would be embedded YouTube players. For now, click the links below.)</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${step.videos.map(v => `
+                    <div class="card" style="padding: 16px;">
+                        <h4 style="font-size: 16px;">🎥 ${v.title}</h4>
+                        <p style="font-size: 13px; color: var(--text-muted);">Duration: ${v.duration}</p>
+                        <a href="${v.url}" target="_blank" class="btn" style="margin-top: 8px; display: inline-block; font-size: 12px;">Watch on YouTube</a>
+                    </div>
+                `).join('')}
+            </div>
+            <button class="btn" style="margin-top: 24px;" onclick="nextCourseStep()">I've Watched These →</button>
+        `;
+    }
+    else if (step.type === 'final_test') {
+        content = `
+            <h3 style="font-size: 18px; margin-bottom: 16px;">Final Test (Need 85% to Pass)</h3>
+            <form id="finalTestForm" onsubmit="submitFinalTest(event)">
+                ${step.questions.map((q, i) => `
+                    <div style="margin-bottom: 20px;">
+                        <p style="font-weight: 500; margin-bottom: 8px;">${i + 1}. ${q.q}</p>
+                        ${q.options.map((opt, optIndex) => `
+                            <label style="display: block; margin-bottom: 6px; cursor: pointer;">
+                                <input type="radio" name="fq${i}" value="${optIndex}" required style="margin-right: 8px;">
+                                ${opt}
+                            </label>
+                        `).join('')}
+                    </div>
+                `).join('')}
+                <button type="submit" class="btn" style="background: #22c55e;">Submit Final Test</button>
+            </form>
+        `;
+    }
+
+    return `
+        <div style="width: 100%; padding: 24px; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h1 style="font-size: 24px;">${currentCourse.title}</h1>
+                <button class="btn btn-outline" onclick="currentCourse = null; renderApp();">Exit Course</button>
+            </div>
+            <div class="card" style="padding: 32px;">
+                ${content}
+            </div>
+        </div>
+    `;
+}
+
+// 6. Submit Questions
+function submitQuestions(event) {
+    event.preventDefault();
+    const step = currentCourse.steps[currentStep];
+    let correct = 0;
+    
+    step.questions.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        if (selected && parseInt(selected.value) === q.answer) {
+            correct++;
+        }
+    });
+    
+    const score = (correct / step.questions.length) * 100;
+    if (score >= 60) {
+        alert(`Passed! You got ${Math.round(score)}%.`);
+        nextCourseStep();
+    } else {
+        alert(`You got ${Math.round(score)}%. You need 60% to continue. Try again.`);
+    }
+}
+
+// 7. Submit Final Test (Need 85%)
+function submitFinalTest(event) {
+    event.preventDefault();
+    const step = currentCourse.steps[currentStep];
+    let correct = 0;
+    
+    step.questions.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="fq${i}"]:checked`);
+        if (selected && parseInt(selected.value) === q.answer) {
+            correct++;
+        }
+    });
+    
+    const score = (correct / step.questions.length) * 100;
+    
+    if (score >= 85) {
+        alert(`🎉 Congratulations! You passed with ${Math.round(score)}%. You are now certified in ${currentCourse.title}.`);
+        currentCourse = null; // Reset to list
+        renderApp();
+    } else {
+        alert(`You got ${Math.round(score)}%. You need 85% to pass. Review the material and try again.`);
+    }
+}
+
+// 8. Move to Next Step
+function nextCourseStep() {
+    currentStep++;
+    renderApp();
+}
+
+// Export functions
+window.startCourse = startCourse;
+window.nextCourseStep = nextCourseStep;
+window.submitQuestions = submitQuestions;
+window.submitFinalTest = submitFinalTest;
 // ============================================================
 // FEATURE 4: INTELLIGENCE (COMPETITOR TRACKER)
 // ============================================================
