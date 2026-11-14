@@ -1,18 +1,15 @@
 // ============================================================
-// BLANK LOG — MAIN SITE + RESEARCH LAB (WITH LOGIN)
+// BLANK LOG — MAIN SITE + RESEARCH LAB (NO LOGIN, SECRET CODE AUTH)
 // ============================================================
 
 const ACCESS_CODE = 'CASSIE-ENZO';
 const API_BASE = '/api';
 
 let AppState = {
-    isAuthenticated: false,
     isUnlocked: false,
     activeTab: 'home',
     researchSubtab: 'analytics',
-    token: localStorage.getItem('blanklog_token') || null,
-    user: null,
-    authError: '',
+    token: localStorage.getItem('blanklog_admin_token') || null,
     analyticsChart: null
 };
 
@@ -52,62 +49,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 }
 
 // ============================================================
-// LOGIN LOGIC
-// ============================================================
-function renderLoginScreen() {
-    return `
-        <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); padding: 20px;">
-            <div style="max-width: 400px; width: 100%;">
-                <div style="text-align: center; margin-bottom: 32px;">
-                    <div style="width: 64px; height: 64px; border-radius: 16px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 32px; margin: 0 auto 16px;">◼</div>
-                    <h1 style="font-size: 28px; font-weight: 700; color: var(--text-primary);">Blank Log™</h1>
-                    <p style="color: var(--text-muted); margin-top: 8px;">Admin Access Only</p>
-                </div>
-                <div class="card" style="padding: 24px;">
-                    ${AppState.authError ? `<div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 10px; border-radius: 8px; margin-bottom: 14px; font-size: 13px;">${AppState.authError}</div>` : ''}
-                    <input type="email" id="loginEmail" placeholder="Email" style="margin-bottom: 12px;">
-                    <input type="password" id="loginPassword" placeholder="Password" style="margin-bottom: 16px;">
-                    <button class="btn" style="width: 100%;" onclick="handleLogin()">Sign In</button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-async function handleLogin() {
-    const email = document.getElementById('loginEmail')?.value;
-    const password = document.getElementById('loginPassword')?.value;
-    
-    if (!email || !password) {
-        AppState.authError = 'Enter email and password';
-        renderApp();
-        return;
-    }
-
-    const res = await apiCall('auth', 'POST', { action: 'login', email, password });
-    if (res.success) {
-        AppState.token = res.data.token;
-        AppState.user = res.data.user;
-        AppState.isAuthenticated = true;
-        localStorage.setItem('blanklog_token', res.data.token);
-        AppState.authError = '';
-        renderApp();
-    } else {
-        AppState.authError = res.error;
-        renderApp();
-    }
-}
-
-function logout() {
-    AppState.isAuthenticated = false;
-    AppState.token = null;
-    AppState.user = null;
-    localStorage.removeItem('blanklog_token');
-    renderApp();
-}
-
-// ============================================================
-// PUBLIC PAGES (Same as before)
+// PUBLIC PAGES
 // ============================================================
 function renderSidebar() {
     return `
@@ -117,9 +59,6 @@ function renderSidebar() {
                 ${getTabs().map(tab => `
                     <button onclick="setActiveTab('${tab.id}')" class="nav-link ${AppState.activeTab === tab.id ? 'active' : ''}">${tab.label}</button>
                 `).join('')}
-            </div>
-            <div style="padding: 16px; margin-top: auto; border-top: 1px solid var(--border-color);">
-                <button class="btn btn-outline" style="width: 100%;" onclick="logout()">Log Out</button>
             </div>
         </div>
     `;
@@ -238,17 +177,17 @@ function renderResearchContent() {
 }
 
 // ============================================================
-// FEATURE 1: ANALYTICS
+// FEATURE 1: ANALYTICS (Candlestick Placeholder)
 // ============================================================
 function renderAnalyticsLab() {
     return `
         <div style="width: 100%; padding: 24px; overflow-y: auto;">
             <h1 style="font-size: 24px; margin-bottom: 8px;">App Analytics</h1>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">Real-time data. Currently showing $0 until apps are live.</p>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Real-time candlestick data. $0 until apps are live.</p>
             <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="card" style="padding: 16px;"><h3 style="font-size: 16px; margin-bottom: 12px;">DevAI</h3><div style="height: 150px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);"><span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span></div></div>
-                <div class="card" style="padding: 16px;"><h3 style="font-size: 16px; margin-bottom: 12px;">PulseAI</h3><div style="height: 150px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);"><span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span></div></div>
-                <div class="card" style="padding: 16px;"><h3 style="font-size: 16px; margin-bottom: 12px;">InsightAI</h3><div style="height: 150px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);"><span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span></div></div>
+                <div class="card" style="padding: 16px;"><h3 style="font-size: 16px; margin-bottom: 12px;">DevAI</h3><div style="height: 200px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);"><span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span></div></div>
+                <div class="card" style="padding: 16px;"><h3 style="font-size: 16px; margin-bottom: 12px;">PulseAI</h3><div style="height: 200px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);"><span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span></div></div>
+                <div class="card" style="padding: 16px;"><h3 style="font-size: 16px; margin-bottom: 12px;">InsightAI</h3><div style="height: 200px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);"><span style="color: #ef4444; font-size: 12px;">No Data Yet ($0)</span></div></div>
             </div>
         </div>
     `;
@@ -257,7 +196,7 @@ function renderAnalyticsLab() {
 function initAnalyticsCharts() {}
 
 // ============================================================
-// FEATURE 2: MARKETING (Generator)
+// FEATURE 2: MARKETING
 // ============================================================
 function renderMarketing() {
     return `
@@ -303,7 +242,7 @@ async function generateCampaign() {
 }
 
 // ============================================================
-// FEATURE 3: AI COURSES (Wizard)
+// FEATURE 3: AI COURSES
 // ============================================================
 const courseData = {
     'prompt-eng': {
@@ -312,10 +251,10 @@ const courseData = {
         steps: [
             { type: 'reading', content: 'Prompt engineering is the art of guiding AI. A good prompt includes a role, context, and specific constraints. Always tell the AI who it is (e.g., "You are a senior developer") and exactly what format you want (e.g., "Reply in JSON").' },
             { type: 'questions', questions: [{ q: 'What is the first thing you should define in a prompt?', options: ['The role', 'The temperature', 'The API key'], answer: 0 }, { q: 'Which format is best for structured data?', options: ['A poem', 'JSON', 'A story'], answer: 1 }, { q: 'What does few-shot prompting mean?', options: ['Giving examples', 'Using fewer tokens', 'Lowering the temperature'], answer: 0 }]},
-            { type: 'reading', content: 'Now let\'s talk about temperature. Temperature controls randomness. A temperature of 0 is deterministic (good for code), while a temperature of 0.8 is creative (good for marketing). Always set this based on the task.' },
+            { type: 'reading', content: 'Now let\'s talk about temperature. Temperature controls randomness. A temperature of 0 is deterministic (good for code), while a temperature of 0.8 is creative (good for marketing).' },
             { type: 'videos', videos: [{ title: 'Prompt Engineering Basics', duration: '24 min', url: 'https://youtube.com/watch?v=example1' }, { title: 'Advanced Prompting Techniques', duration: '28 min', url: 'https://youtube.com/watch?v=example2' }]},
-            { type: 'reading', content: 'The videos above showed you how to chain prompts together. Chain-of-thought prompting is when you tell the AI to "think step by step." This dramatically improves reasoning on complex math and logic problems.' },
-            { type: 'reading', content: 'Finally, always validate your AI output. Never trust the AI blindly. Use code to check if the output matches your expected schema before using it in your app.' },
+            { type: 'reading', content: 'The videos above showed you how to chain prompts together. Chain-of-thought prompting is when you tell the AI to "think step by step." This dramatically improves reasoning.' },
+            { type: 'reading', content: 'Finally, always validate your AI output. Never trust the AI blindly. Use code to check if the output matches your expected schema.' },
             { type: 'final_test', questions: [{ q: 'What does temperature 0 do?', options: ['Makes it creative', 'Makes it deterministic', 'Turns it off'], answer: 1 }, { q: 'What is chain-of-thought?', options: ['Thinking step-by-step', 'Using a blockchain', 'A type of prompt injection'], answer: 0 }, { q: 'Should you validate AI output?', options: ['No, trust it', 'Yes, always', 'Only for code'], answer: 1 }]}
         ]
     },
@@ -327,8 +266,8 @@ const courseData = {
             { type: 'questions', questions: [{ q: 'What drives meme coin prices?', options: ['Company earnings', 'Community sentiment', 'Government policy'], answer: 1 }, { q: 'What is the "Markup" phase?', options: ['When price drops', 'When price rises fast', 'When volume is flat'], answer: 1 }, { q: 'Are meme coins safe long-term?', options: ['Yes', 'No', 'Only Bitcoin'], answer: 1 }]},
             { type: 'reading', content: 'Liquidity is critical. If a meme coin has low liquidity, a large sell order will crash the price instantly (slippage). Always check the liquidity pool on decentralized exchanges before buying.' },
             { type: 'videos', videos: [{ title: 'How Meme Coins Pump and Dump', duration: '22 min', url: 'https://youtube.com/watch?v=example3' }, { title: 'Reading Crypto Charts for Beginners', duration: '25 min', url: 'https://youtube.com/watch?v=example4' }]},
-            { type: 'reading', content: 'The videos explained how to spot volume spikes. If the price is going up but volume is going down, that is a bearish divergence. It means the hype is dying. Look for price and volume moving together.' },
-            { type: 'reading', content: 'Risk management is the most important part. Never put more than 1-2% of your portfolio into a single meme coin. Use stop-losses and take profits on the way up. Greed kills traders.' },
+            { type: 'reading', content: 'The videos explained how to spot volume spikes. If the price is going up but volume is going down, that is a bearish divergence. It means the hype is dying.' },
+            { type: 'reading', content: 'Risk management is the most important part. Never put more than 1-2% of your portfolio into a single meme coin. Use stop-losses and take profits on the way up.' },
             { type: 'final_test', questions: [{ q: 'What is slippage?', options: ['Price impact of a trade', 'A type of wallet', 'A trading fee'], answer: 0 }, { q: 'What is a bearish divergence?', options: ['Price up, volume down', 'Price down, volume up', 'Both up'], answer: 0 }, { q: 'How much of your portfolio should go into one meme coin?', options: ['100%', '1-2%', '50%'], answer: 1 }]}
         ]
     },
@@ -340,8 +279,8 @@ const courseData = {
             { type: 'questions', questions: [{ q: 'What does a $0.60 Yes contract mean?', options: ['60% probability', '60 cents profit', '60 days to resolve'], answer: 0 }, { q: 'What happens if the event resolves "No"?', options: ['You get $1', 'You lose your stake', 'You get a refund'], answer: 1 }, { q: 'Is Kalshi regulated?', options: ['No', 'Yes', 'Only in Europe'], answer: 1 }]},
             { type: 'reading', content: 'The price of a contract is essentially the market\'s consensus probability. If a contract is trading at $0.40, the market believes there is a 40% chance it will happen. Your job is to find markets where you believe the true probability is higher than the market price (an "edge").' },
             { type: 'videos', videos: [{ title: 'How Kalshi Works', duration: '20 min', url: 'https://youtube.com/watch?v=example5' }, { title: 'Advanced Prediction Market Strategies', duration: '30 min', url: 'https://youtube.com/watch?v=example6' }]},
-            { type: 'reading', content: 'The videos covered the "Kelly Criterion" for position sizing. It helps you calculate the optimal amount to bet based on your edge and bankroll. Never bet more than 5% of your bankroll on a single market, regardless of how confident you are.' },
-            { type: 'reading', content: 'Finally, always do your own research. Read the actual rules of the contract. Sometimes there are technicalities in how a market resolves that can surprise you. Trade the rules, not just the headlines.' },
+            { type: 'reading', content: 'The videos covered the "Kelly Criterion" for position sizing. It helps you calculate the optimal amount to bet based on your edge and bankroll.' },
+            { type: 'reading', content: 'Finally, always do your own research. Read the actual rules of the contract. Sometimes there are technicalities in how a market resolves that can surprise you.' },
             { type: 'final_test', questions: [{ q: 'What does a $0.40 No contract mean?', options: ['40% chance of No', '60% chance of No', '40% profit'], answer: 1 }, { q: 'What is the Kelly Criterion?', options: ['A betting strategy', 'A stock index', 'A type of order'], answer: 0 }, { q: 'What should you always read?', options: ['The headlines', 'The contract rules', 'Twitter'], answer: 1 }]}
         ]
     }
@@ -430,7 +369,7 @@ function submitFinalTest(event) {
 function nextCourseStep() { currentStep++; renderApp(); }
 
 // ============================================================
-// FEATURE 4: INTELLIGENCE (Competitor Tracker)
+// FEATURE 4: INTELLIGENCE
 // ============================================================
 function renderIntelligence() {
     return `
@@ -463,25 +402,33 @@ async function trackCompetitor() {
 }
 
 // ============================================================
-// MODAL & SECRET CODE
+// MODAL & SECRET CODE (GENERATES ADMIN TOKEN)
 // ============================================================
 function openModal() { document.getElementById('adminModal').classList.add('active'); }
 function closeModal() { document.getElementById('adminModal').classList.remove('active'); document.getElementById('accessCode').value = ''; document.getElementById('errorText').style.display = 'none'; }
 function verifyCode() {
     const input = document.getElementById('accessCode').value.toUpperCase().trim();
-    if (input === ACCESS_CODE) { AppState.isUnlocked = true; closeModal(); renderApp(); } 
-    else { document.getElementById('errorText').style.display = 'block'; }
+    if (input === ACCESS_CODE) {
+        AppState.isUnlocked = true;
+        
+        // Generate a fake JWT token for the backend so API calls work
+        const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+        const payload = btoa(JSON.stringify({ userId: "admin_001", email: "blanklogapp@gmail.com", role: "admin", exp: Date.now() + (30 * 24 * 60 * 60 * 1000) }));
+        const signature = "fake_signature_for_demo";
+        AppState.token = `${header}.${payload}.${signature}`;
+        localStorage.setItem('blanklog_admin_token', AppState.token);
+        
+        closeModal();
+        renderApp();
+    } else {
+        document.getElementById('errorText').style.display = 'block';
+    }
 }
 
 // ============================================================
 // MAIN RENDER
 // ============================================================
 function renderApp() {
-    if (!AppState.isAuthenticated) {
-        document.getElementById('root').innerHTML = renderLoginScreen();
-        return;
-    }
-
     let content = '';
     switch(AppState.activeTab) {
         case 'home': content = renderHomeTab(); break;
@@ -529,8 +476,6 @@ window.submitFinalTest = submitFinalTest;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.verifyCode = verifyCode;
-window.handleLogin = handleLogin;
-window.logout = logout;
 
 // Initial render
 renderApp();
