@@ -1,5 +1,5 @@
 // ============================================================
-// BLANK LOG — MAIN SITE + RESEARCH LAB (UI BUILDER + ANALYTICS)
+// BLANK LOG — MAIN SITE + RESEARCH LAB (FINAL)
 // ============================================================
 
 const ACCESS_CODE = 'CASSIE-ENZO';
@@ -7,8 +7,9 @@ const ACCESS_CODE = 'CASSIE-ENZO';
 let AppState = {
     isUnlocked: false,
     activeTab: 'home',
-    researchSubtab: 'builder', // 'builder' or 'analytics'
-    analyticsChart: null
+    researchSubtab: 'video', // 'video', 'builder', 'courses', 'intelligence', 'marketing'
+    analyticsChart: null,
+    videoPrompt: ''
 };
 
 const tabs = [
@@ -108,22 +109,31 @@ function renderUpdatesTab() {
 }
 
 // ============================================================
-// RESEARCH LAB (UI BUILDER + ANALYTICS)
+// RESEARCH LAB (ALL 5 FEATURES)
 // ============================================================
 function renderResearchTab() {
     if (!AppState.isUnlocked) return `<div style="text-align:center; padding: 100px 20px;"><h1>Access Denied</h1></div>`;
     
+    const subtabs = [
+        { id: 'video', label: 'Video Studio' },
+        { id: 'builder', label: 'UI Builder' },
+        { id: 'courses', label: 'AI Courses' },
+        { id: 'intelligence', label: 'Intelligence' },
+        { id: 'marketing', label: 'Marketing' }
+    ];
+
     return `
         <div class="studio-header">
             <div class="studio-title">Research Lab</div>
-            <div class="studio-actions">
-                <button class="transform-btn ${AppState.researchSubtab === 'builder' ? 'active' : ''}" onclick="setResearchSubtab('builder')">UI Builder</button>
-                <button class="transform-btn ${AppState.researchSubtab === 'analytics' ? 'active' : ''}" onclick="setResearchSubtab('analytics')">Analytics Lab</button>
+            <div class="studio-actions" style="flex-wrap: wrap;">
+                ${subtabs.map(tab => `
+                    <button class="transform-btn ${AppState.researchSubtab === tab.id ? 'active' : ''}" onclick="setResearchSubtab('${tab.id}')">${tab.label}</button>
+                `).join('')}
             </div>
         </div>
         
         <div id="research-content" style="flex: 1; display: flex; overflow: hidden;">
-            ${AppState.researchSubtab === 'builder' ? renderUIBuilder() : renderAnalyticsLab()}
+            ${renderResearchContent()}
         </div>
     `;
 }
@@ -131,26 +141,59 @@ function renderResearchTab() {
 function setResearchSubtab(tab) {
     AppState.researchSubtab = tab;
     renderApp();
-    
-    if (tab === 'analytics') {
-        setTimeout(initAnalyticsChart, 100);
+}
+
+function renderResearchContent() {
+    switch(AppState.researchSubtab) {
+        case 'video': return renderVideoStudio();
+        case 'builder': return renderUIBuilder();
+        case 'courses': return renderCourses();
+        case 'intelligence': return renderIntelligence();
+        case 'marketing': return renderMarketing();
+        default: return renderVideoStudio();
     }
 }
 
 // ============================================================
-// 1. UI COMPONENT BUILDER
+// FEATURE 1: VIDEO STUDIO (Replaces 3D Model)
+// ============================================================
+function renderVideoStudio() {
+    return `
+        <div style="width: 100%; padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 24px; margin-bottom: 8px;">Video Ad Studio</h1>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Generate realistic video ads using AI (Requires API integration).</p>
+            
+            <div class="card" style="padding: 24px;">
+                <label style="font-size: 14px; color: var(--text-muted); display: block; margin-bottom: 8px;">Ad Prompt</label>
+                <textarea id="videoPromptInput" rows="3" style="width: 100%; background: #050505; color: white; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 16px;" placeholder="e.g., A cinematic shot of a sneaker on a wet street, neon reflections, slow motion..."></textarea>
+                
+                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                    <select style="background: #050505; color: white; border: 1px solid var(--border-color); padding: 10px; border-radius: 8px;">
+                        <option>Google Veo 3.1 (Realism)</option>
+                        <option>Runway Gen-4 (Ads)</option>
+                    </select>
+                    <button class="btn" onclick="alert('Backend API integration required for Veo/Runway.')">Generate Video</button>
+                </div>
+                
+                <div style="width: 100%; height: 400px; background: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
+                    <p style="color: var(--text-muted);">Generated video will appear here</p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// FEATURE 2: UI BUILDER
 // ============================================================
 function renderUIBuilder() {
     return `
         <div style="display: flex; width: 100%; height: 100%;">
-            <!-- Code Editor -->
             <div style="width: 50%; padding: 16px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column;">
                 <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">HTML / CSS Code</h4>
                 <textarea id="uiCodeInput" style="flex: 1; background: #050505; color: #22c55e; font-family: monospace; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; resize: none;" placeholder="<div style='color: white; padding: 20px;'>Hello World</div>"></textarea>
                 <button class="btn" style="margin-top: 12px;" onclick="updatePreview()">Run / Preview</button>
             </div>
-            
-            <!-- Live Preview -->
             <div style="width: 50%; padding: 16px; display: flex; flex-direction: column;">
                 <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">Live Preview</h4>
                 <iframe id="uiPreview" style="flex: 1; background: white; border: none; border-radius: 8px; width: 100%; height: 100%;"></iframe>
@@ -171,66 +214,59 @@ function updatePreview() {
 }
 
 // ============================================================
-// 2. ANALYTICS LAB
+// FEATURE 3: AI COURSES
 // ============================================================
-function renderAnalyticsLab() {
+function renderCourses() {
     return `
         <div style="width: 100%; padding: 24px; overflow-y: auto;">
-            <h1 style="font-size: 24px; margin-bottom: 24px;">Business Analytics Lab</h1>
-            
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
-                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Total Users</h3><p style="font-size: 28px; font-weight: bold; margin-top: 8px;">1,248</p></div>
-                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Active Subscriptions</h3><p style="font-size: 28px; font-weight: bold; margin-top: 8px;">342</p></div>
-                <div class="card"><h3 style="font-size: 14px; color: var(--text-muted);">Monthly Revenue</h3><p style="font-size: 28px; font-weight: bold; margin-top: 8px; color: #22c55e;">$4,580</p></div>
-            </div>
-            
-            <div class="card" style="padding: 24px;">
-                <h3 style="font-size: 18px; margin-bottom: 16px;">User Growth (Simulated)</h3>
-                <canvas id="analyticsChart" style="width: 100%; height: 300px;"></canvas>
+            <h1 style="font-size: 24px; margin-bottom: 24px;">AI Courses</h1>
+            <div class="card-grid">
+                <div class="card"><h3>Prompt Engineering 101</h3><p>Learn how to write prompts that actually work.</p><button class="btn">Start Course</button></div>
+                <div class="card"><h3>Building AI Agents</h3><p>How to connect LLMs to tools and APIs.</p><button class="btn">Start Course</button></div>
+                <div class="card"><h3>Fine-Tuning Models</h3><p>How to train base models on your own data.</p><button class="btn">Start Course</button></div>
             </div>
         </div>
     `;
 }
 
-function initAnalyticsChart() {
-    const canvas = document.getElementById('analyticsChart');
-    if (!canvas) return;
-    
-    if (AppState.analyticsChart) AppState.analyticsChart.destroy();
+// ============================================================
+// FEATURE 4: INTELLIGENCE
+// ============================================================
+function renderIntelligence() {
+    return `
+        <div style="width: 100%; padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 24px; margin-bottom: 24px;">AI Company Intelligence</h1>
+            <div class="card">
+                <h3 style="font-size: 18px; margin-bottom: 8px;">OpenAI Releases GPT-5</h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">June 2026</p>
+                <p>OpenAI announced GPT-5 with a massive leap in reasoning and multimodal understanding. The model now handles 1M token context windows natively.</p>
+            </div>
+            <div class="card" style="margin-top: 16px;">
+                <h3 style="font-size: 18px; margin-bottom: 8px;">Anthropic Raises $2B</h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">May 2026</p>
+                <p>Anthropic closed a $2B funding round led by Google, valuing the company at $60B. The funds will go towards compute and safety research.</p>
+            </div>
+        </div>
+    `;
+}
 
-    AppState.analyticsChart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [
-                {
-                    label: 'Users',
-                    data: [150, 300, 500, 750, 1000, 1248],
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                },
-                {
-                    label: 'Subscriptions',
-                    data: [20, 60, 120, 180, 250, 342],
-                    borderColor: '#22c55e',
-                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#ffffff' } } },
-            scales: {
-                x: { ticks: { color: '#888' }, grid: { color: '#222' } },
-                y: { ticks: { color: '#888' }, grid: { color: '#222' } }
-            }
-        }
-    });
+// ============================================================
+// FEATURE 5: MARKETING IDEAS
+// ============================================================
+function renderMarketing() {
+    return `
+        <div style="width: 100%; padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 24px; margin-bottom: 24px;">Marketing Ideas</h1>
+            <div class="card">
+                <h3 style="font-size: 18px; margin-bottom: 8px;">Idea #1: Launch on Product Hunt</h3>
+                <p>Coordinate a launch for DevAI on Product Hunt. Prepare a demo video, a clear tagline, and a special discount for early adopters.</p>
+            </div>
+            <div class="card" style="margin-top: 16px;">
+                <h3 style="font-size: 18px; margin-bottom: 8px;">Idea #2: Twitter/X Thread</h3>
+                <p>Write a thread breaking down "How to build an AI app in 2026" and plug PulseAI at the end as the tool that handles the socials.</p>
+            </div>
+        </div>
+    `;
 }
 
 // ============================================================
